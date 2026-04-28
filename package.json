@@ -3,10 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev":         "next dev --turbopack",
+    "build":       "next build",
+    "start":       "next start",
+    "lint":        "next lint",
+    "typecheck":   "tsc --noEmit",
+    "db:push":     "drizzle-kit push",
+    "db:studio":   "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate":  "drizzle-kit migrate"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
