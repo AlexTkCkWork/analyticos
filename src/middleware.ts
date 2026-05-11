@@ -28,13 +28,12 @@ function redirectToLogin(request: NextRequest) {
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const isDev = process.env.NODE_ENV === 'development';
+    const ip =
+        request.headers.get('x-forwarded-for') ??
+        request.headers.get('x-real-ip') ??
+        'anonymous';
 
     if (!isDev) {
-        const ip =
-            request.headers.get('x-forwarded-for') ??
-            request.headers.get('x-real-ip') ??
-            'anonymous';
-
         const global = await globalRateLimit.limit(ip);
         if (!global.success) return tooManyRequests(global.reset);
     }
