@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
         userId = session.user.id;
     }
 
-    if (config.rateLimiter) {
+    if (!isDev && config.rateLimiter) {
         const identifier =
             config.rateLimitBy === 'userId' && userId ? userId : ip;
 
