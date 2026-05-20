@@ -1,69 +1,77 @@
-import NextAuth from 'next-auth'
-import GitHub from 'next-auth/providers/github'
-import Credentials from 'next-auth/providers/credentials'
-import {DrizzleAdapter} from "@auth/drizzle-adapter"
-import {db} from '@/lib/db'
-import {users} from '@/lib/db/schema'
-import {eq} from 'drizzle-orm'
-import {compare} from 'bcryptjs'
-import {z} from 'zod'
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { compare } from 'bcryptjs';
+import { z } from 'zod';
+import { authConfig } from '@/lib/auth.config';
 
 const CredentialsSchema = z.object({
     email: z.string().email(),
     password: z.string().min(1),
-})
+});
 
-export const {auth, handlers, signIn, signOut} = NextAuth({
+export const { auth, handlers } = NextAuth({
+    ...authConfig,
+
     adapter: DrizzleAdapter(db),
 
+    session: { strategy: 'database' },
+
     providers: [
-        GitHub({
-            clientId: process.env.AUTH_GITHUB_ID!,
-            clientSecret: process.env.AUTH_GITHUB_SECRET!,
-        }),
+        ...authConfig.providers,
+
         Credentials({
             credentials: {
-                email: {label: 'Email', type: 'email'},
-                password: {label: 'Password', type: 'password'},
+                email: { label: 'Email', type: 'email' },
+                password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials) {
-                const parsed = CredentialsSchema.safeParse(credentials);
+                try {
+                    const parsed = CredentialsSchema.safeParse(credentials);
+                    if (!parsed.success) return null;
 
-                if (!parsed.success) return null;
+                    const { email, password } = parsed.data;
 
-                const {email, password} = parsed.data;
+                    const user = await db.query.users.findFirst({
+                        where: eq(users.email, email),
+                        columns: {
+                            id: true,
+                            email: true,
+                            name: true,
+                            image: true,
+                            hashedPassword: true,
+                        },
+                    });
 
-                const user = await db.query.users.findFirst({
-                    where: eq(users.email, email),
-                });
+                    if (!user?.hashedPassword) return null;
 
-                if (!user?.hashedPassword) return null;
+                    const valid = await compare(password, user.hashedPassword);
+                    if (!valid) return null;
 
-                const valid = await compare(password, user.hashedPassword);
-
-                if (!valid) return null;
-
-                return user;
-            }
-        })
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name ?? null,
+                        image: user.image ?? null,
+                    };
+                } catch (error) {
+                    console.error('[auth][authorize]', error);
+                    return null;
+                }
+            },
+        }),
     ],
 
-    session: {
-        strategy: 'database',
-    },
-
     callbacks: {
-        async session({session, user}) {
+        ...authConfig.callbacks,
+        async session({ session, user }) {
             if (session.user) {
-                session.user.id = user.id
+                session.user.id = user.id;
             }
-
-            return session
-        }
+            return session;
+        },
     },
-
-    pages: {
-        signIn: '/login',
-        error: '/auth/error'
-    }
-})
+});
