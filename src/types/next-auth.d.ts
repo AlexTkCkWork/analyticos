@@ -17,3 +17,9 @@ declare module "@auth/core/adapters" {
         id: string
     }
 }
+
+declare module 'next-auth/jwt' {
+    interface JWT {
+        credentials?: boolean;
+    }
+}
