@@ -22,7 +22,7 @@ const adapter = DrizzleAdapter(db, {
     verificationTokensTable: verificationTokens,
 });
 
-export const { auth, handlers } = NextAuth({
+export const { auth, handlers, signOut, signIn } = NextAuth({
     ...authConfig,
 
     adapter,
