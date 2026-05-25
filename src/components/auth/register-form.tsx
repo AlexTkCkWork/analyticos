@@ -57,7 +57,7 @@ const RegisterForm = () => {
                 return;
             }
 
-            router.push('/onboarding');
+            router.push('/dashboard');
             router.refresh();
         } catch {
             setServerError('Something went wrong. Please try again.');
