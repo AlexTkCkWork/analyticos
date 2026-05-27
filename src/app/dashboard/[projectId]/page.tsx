@@ -17,6 +17,7 @@ import TimeSeriesChart from '@/components/charts/time-series-chart';
 import BarList from '@/components/charts/bar-list';
 import DateRangePicker from '@/components/dashboard/date-range-picker';
 import { withCache } from '@/lib/cache';
+import Link from 'next/link';
 
 type PageProps = {
     params: Promise<{ projectId: string }>;
@@ -72,7 +73,19 @@ const Page = async ({ params, searchParams }: PageProps) => {
         <div className={'space-y-6'}>
             <div className={'flex items-start justify-between gap-4'}>
                 <div>
-                    <h1 className={'text-2xl font-semibold'}>{project.name}</h1>
+                    <div className={'flex items-center gap-3'}>
+                        <h1 className={'text-2xl font-semibold'}>
+                            {project.name}
+                        </h1>
+                        <Link
+                            href={`/dashboard/${project.id}/settings`}
+                            className={
+                                'text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 hover:underline'
+                            }
+                        >
+                            Settings
+                        </Link>
+                    </div>
                     <p className={'text-sm text-muted-foreground'}>
                         {project.domain} · {range.label}
                     </p>
