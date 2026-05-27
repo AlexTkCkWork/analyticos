@@ -16,11 +16,14 @@ import {
 import TimeSeriesChart from '@/components/charts/time-series-chart';
 import BarList from '@/components/charts/bar-list';
 import DateRangePicker from '@/components/dashboard/date-range-picker';
+import { withCache } from '@/lib/cache';
 
 type PageProps = {
     params: Promise<{ projectId: string }>;
     searchParams: Promise<{ period?: RangePeriod; from?: string; to?: string }>;
 };
+
+const CACHE_TTL = 60;
 
 const Page = async ({ params, searchParams }: PageProps) => {
     const session = await auth();
@@ -32,6 +35,11 @@ const Page = async ({ params, searchParams }: PageProps) => {
 
     const range = parseAnalyticsRange(await searchParams);
 
+    const rangeKey =
+        range.period === 'custom'
+            ? `custom:${range.from.toISOString()}:${range.to.toISOString()}`
+            : range.period;
+
     const [
         topLine,
         overTime,
@@ -41,16 +49,22 @@ const Page = async ({ params, searchParams }: PageProps) => {
         browsers,
         os,
         countries,
-    ] = await Promise.all([
-        getTopLineStats(projectId, range),
-        getPageviewsOverTime(projectId, range),
-        getTopPages(projectId, range),
-        getTopReferrers(projectId, range),
-        getDeviceBreakdown(projectId, range),
-        getBrowserBreakdown(projectId, range),
-        getOsBreakdown(projectId, range),
-        getCountryBreakdown(projectId, range),
-    ]);
+    ] = await withCache(
+        `stats:${projectId}:${rangeKey}`,
+        CACHE_TTL,
+        async () => {
+            return await Promise.all([
+                getTopLineStats(projectId, range),
+                getPageviewsOverTime(projectId, range),
+                getTopPages(projectId, range),
+                getTopReferrers(projectId, range),
+                getDeviceBreakdown(projectId, range),
+                getBrowserBreakdown(projectId, range),
+                getOsBreakdown(projectId, range),
+                getCountryBreakdown(projectId, range),
+            ]);
+        }
+    );
 
     const series = fillTimeSeries(overTime, range);
 
