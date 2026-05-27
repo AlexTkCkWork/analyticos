@@ -16,7 +16,7 @@ export const routesConfigs: RouteConfig[] = [
     {
         pattern: /^\/api\/auth\/callback\/credentials/,
         requiresAuth: false,
-        rateLimiter: authRateLimit,
+        rateLimiter: null,
         rateLimitBy: 'ip',
     },
     {
