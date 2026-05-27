@@ -1,7 +1,7 @@
 const encoder = new TextEncoder();
 
 export const generateVisitorHash = async (params: {
-    id: string;
+    ip: string;
     userAgent: string;
     projectId: string;
     date?: string;
@@ -15,7 +15,7 @@ export const generateVisitorHash = async (params: {
     }
 
     const date = params.date ?? new Date().toISOString().slice(0, 10);
-    const raw = `${params.id}:${params.userAgent}:${params.projectId}:${date}:${date}`;
+    const raw = `${params.ip}:${params.userAgent}:${params.projectId}:${date}:${date}`;
 
     const digest = await crypto.subtle.digest('SHA-256', encoder.encode(raw));
 
