@@ -9,7 +9,7 @@ export type AnalyticsRange = {
     period: RangePeriod;
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+export const DAY_MS = 24 * 60 * 60 * 1000;
 
 const startOfUtcDay = (d: Date): Date => {
     const x = new Date(d);
