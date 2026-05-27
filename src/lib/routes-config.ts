@@ -2,46 +2,52 @@ import {
     authRateLimit,
     collectRateLimit,
     apiRateLimit,
-} from "@/lib/rate-limit"
-import type { Ratelimit } from "@upstash/ratelimit"
+} from '@/lib/rate-limit';
+import type { Ratelimit } from '@upstash/ratelimit';
 
 export type RouteConfig = {
-    pattern:       RegExp
-    requiresAuth:  boolean
-    rateLimiter:   Ratelimit | null
-    rateLimitBy:   "ip" | "userId"
-}
+    pattern: RegExp;
+    requiresAuth: boolean;
+    rateLimiter: Ratelimit | null;
+    rateLimitBy: 'ip' | 'userId';
+};
 
 export const routesConfigs: RouteConfig[] = [
     {
-        pattern:      /^\/(login|register)/,
+        pattern: /^\/api\/auth\/callback\/credentials/,
         requiresAuth: false,
-        rateLimiter:  authRateLimit,
-        rateLimitBy:  "ip",
+        rateLimiter: authRateLimit,
+        rateLimitBy: 'ip',
     },
     {
-        pattern:      /^\/api\/collect/,
+        pattern: /^\/(login|register)/,
         requiresAuth: false,
-        rateLimiter:  collectRateLimit,
-        rateLimitBy:  "ip",
+        rateLimiter: null,
+        rateLimitBy: 'ip',
     },
     {
-        pattern:      /^\/dashboard/,
+        pattern: /^\/api\/collect/,
+        requiresAuth: false,
+        rateLimiter: collectRateLimit,
+        rateLimitBy: 'ip',
+    },
+    {
+        pattern: /^\/dashboard/,
         requiresAuth: true,
-        rateLimiter:  apiRateLimit,
-        rateLimitBy:  "userId",
+        rateLimiter: apiRateLimit,
+        rateLimitBy: 'userId',
     },
     {
-        pattern:      /^\/auth\/error/,
+        pattern: /^\/auth\/error/,
         requiresAuth: false,
-        rateLimiter:  null,
-        rateLimitBy:  "ip",
+        rateLimiter: null,
+        rateLimitBy: 'ip',
     },
-]
+];
 
 export const publicFallback: RouteConfig = {
-    pattern:      /.*/,
+    pattern: /.*/,
     requiresAuth: false,
-    rateLimiter:  null,
-    rateLimitBy:  "ip",
-}
+    rateLimiter: null,
+    rateLimitBy: 'ip',
+};
