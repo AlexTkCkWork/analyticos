@@ -15,6 +15,7 @@ import {
 } from '@/lib/db/analytics';
 import TimeSeriesChart from '@/components/charts/time-series-chart';
 import BarList from '@/components/charts/bar-list';
+import DateRangePicker from '@/components/dashboard/date-range-picker';
 
 type PageProps = {
     params: Promise<{ projectId: string }>;
@@ -55,13 +56,14 @@ const Page = async ({ params, searchParams }: PageProps) => {
 
     return (
         <div className={'space-y-6'}>
-            <div className={'flex items-start justify-between'}>
+            <div className={'flex items-start justify-between gap-4'}>
                 <div>
                     <h1 className={'text-2xl font-semibold'}>{project.name}</h1>
                     <p className={'text-sm text-muted-foreground'}>
                         {project.domain} · {range.label}
                     </p>
                 </div>
+                <DateRangePicker activePeriod={range.period} />
             </div>
 
             <div className={'grid grid-cols-2 gap-4 sm:max-w-md'}>
