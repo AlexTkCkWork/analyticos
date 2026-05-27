@@ -44,10 +44,9 @@ export const UpdateProjectSchema = z.object({
 });
 
 export const PageviewEventSchema = z.object({
-    projectKey: z.string().min(1),
+    key: z.string().min(1),
     url: z.string().url('Invalid URL'),
     referrer: z.string().optional().default(''),
-    device: z.enum(['desktop', 'mobile', 'tablet']),
 });
 
 export const DashboardFiltersSchema = z
