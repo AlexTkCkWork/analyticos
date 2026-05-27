@@ -2,10 +2,14 @@ import React, { ReactNode } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import SignOutButton from '@/components/auth/sign-out-button';
+import { listProjectsForUser } from '@/lib/db/queries';
+import Sidebar from '@/components/dashboard/sidebar';
 
 const Layout = async ({ children }: { children: ReactNode }) => {
     const session = await auth();
     if (!session?.user?.id) redirect('/login');
+
+    const projects = await listProjectsForUser(session.user.id);
 
     return (
         <div className={'min-h-screen flex flex-col'}>
@@ -42,9 +46,10 @@ const Layout = async ({ children }: { children: ReactNode }) => {
                 </div>
             </header>
 
-            <main className={'flex-1 container mx-auto px-4 py-8'}>
-                {children}
-            </main>
+            <div className={'flex flex-1'}>
+                <Sidebar projects={projects} />
+                <main className={'flex-1 px-4 py-8'}>{children}</main>
+            </div>
         </div>
     );
 };
