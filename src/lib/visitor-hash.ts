@@ -15,7 +15,7 @@ export const generateVisitorHash = async (params: {
     }
 
     const date = params.date ?? new Date().toISOString().slice(0, 10);
-    const raw = `${params.ip}:${params.userAgent}:${params.projectId}:${date}:${date}`;
+    const raw = `${params.ip}:${params.userAgent}:${params.projectId}:${date}:${secret}`;
 
     const digest = await crypto.subtle.digest('SHA-256', encoder.encode(raw));
 
