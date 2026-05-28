@@ -27,7 +27,7 @@ const resolveBucket = (from: Date, to: Date): RangeBucket =>
     to.getTime() - from.getTime() <= 2 * DAY_MS ? 'hour' : 'day';
 
 export const parseAnalyticsRange = (
-    params: { period?: RangePeriod; from?: string; to?: string },
+    params: { period?: string; from?: string; to?: string },
     now: Date = new Date()
 ): AnalyticsRange => {
     if (params.from && params.to) {
