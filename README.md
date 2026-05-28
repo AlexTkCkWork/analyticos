@@ -1,5 +1,7 @@
 # AnalyticOS
 
+![CI](https://github.com/AlexTkCkWork/analyticos/actions/workflows/ci.yml/badge.svg)
+
 A privacy-first, cookieless web analytics platform — a self-hostable, open-source alternative to Google Analytics in the spirit of Plausible/Fathom. Embed a sub-kilobyte script on your site; see pageviews, unique visitors, top pages, referrers, devices, and geography in a fast dashboard. No cookies. No consent banner. No tracking across days.
 
 > **Live demo:** [analyticos-nu.vercel.app](https://analyticos-nu.vercel.app)
@@ -435,6 +437,19 @@ analyticos/
 | `npm run db:studio` | Open Drizzle Studio |
 | `npm run db:generate` | Generate a migration |
 | `npm run db:migrate` | Apply pending migrations |
+
+---
+
+## Testing
+
+Unit tests cover the privacy/correctness-critical surface — visitor hashing, date-range parsing, time-series gap-filling, and input validation schemas. An end-to-end Playwright test covers the full register → create-project → see-snippet user journey.
+
+```bash
+npm test           # Vitest unit tests (62 tests, < 1s)
+npm run test:e2e   # Playwright E2E (1 test, real browser)
+```
+
+Unit tests run on every PR via GitHub Actions. Test scope is deliberately focused: pure logic where silent bugs would corrupt data or break privacy. UI rendering and DB-mocking tests are skipped — UI bugs surface via E2E, and mocked DB tests would test the mocks.
 
 ---
 
