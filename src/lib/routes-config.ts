@@ -1,8 +1,4 @@
-import {
-    authRateLimit,
-    collectRateLimit,
-    apiRateLimit,
-} from '@/lib/rate-limit';
+import { collectRateLimit, apiRateLimit } from '@/lib/rate-limit';
 import type { Ratelimit } from '@upstash/ratelimit';
 
 export type RouteConfig = {
@@ -13,12 +9,6 @@ export type RouteConfig = {
 };
 
 export const routesConfigs: RouteConfig[] = [
-    {
-        pattern: /^\/api\/auth\/callback\/credentials/,
-        requiresAuth: false,
-        rateLimiter: authRateLimit,
-        rateLimitBy: 'ip',
-    },
     {
         pattern: /^\/(login|register)/,
         requiresAuth: false,
