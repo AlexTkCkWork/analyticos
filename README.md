@@ -4,7 +4,7 @@ A privacy-first, cookieless web analytics platform — a self-hostable, open-sou
 
 > **Live demo:** [analyticos-nu.vercel.app](https://analyticos-nu.vercel.app)
 > **Author:** Oleksii Tkachenko ([@AlexTkCkWork](https://github.com/AlexTkCkWork))
-> **License:** MIT
+> **License:** AGPL-3.0-or-later
 
 ---
 
@@ -466,7 +466,7 @@ This is a personal portfolio project, but issues and pull requests are welcome �
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[AGPL-3.0-or-later](LICENSE) — same license as Plausible Analytics. You're free to self-host, modify, and run AnalyticOS for any purpose, including commercially. If you offer modifications as a service over a network, you must make the modified source available to your users.
 
 ---
 
