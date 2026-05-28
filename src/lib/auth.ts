@@ -9,11 +9,15 @@ import { compare } from 'bcryptjs';
 import { z } from 'zod';
 import { authConfig } from '@/lib/auth.config';
 import { users, accounts, sessions, verificationTokens } from '@/lib/db/schema';
+import { redis } from '@/lib/redis';
 
 const CredentialsSchema = z.object({
     email: z.string().email(),
     password: z.string().min(1),
 });
+
+const FAIL_LIMIT = 5;
+const FAIL_WINDOW_SEC = 15 * 60; // 15 minutes
 
 const adapter = DrizzleAdapter(db, {
     usersTable: users,
@@ -37,10 +41,27 @@ export const { auth, handlers, signOut, signIn } = NextAuth({
                 email: { label: 'Email', type: 'email' },
                 password: { label: 'Password', type: 'password' },
             },
-            async authorize(credentials) {
+            async authorize(credentials, request) {
                 try {
                     const parsed = CredentialsSchema.safeParse(credentials);
                     if (!parsed.success) return null;
+
+                    const isDev = process.env.NODE_ENV === 'development';
+                    const ip =
+                        request?.headers
+                            .get('x-forwarded-for')
+                            ?.split(',')[0]
+                            ?.trim() ??
+                        request?.headers.get('x-real-ip') ??
+                        'unknown';
+                    const failKey = `auth:fails:${ip}`;
+
+                    if (!isDev) {
+                        const fails = await redis.get<number>(failKey);
+                        if (fails !== null && fails >= FAIL_LIMIT) {
+                            return null;
+                        }
+                    }
 
                     const { email, password } = parsed.data;
 
@@ -55,16 +76,29 @@ export const { auth, handlers, signOut, signIn } = NextAuth({
                         },
                     });
 
-                    if (!user?.hashedPassword) return null;
+                    const valid = user?.hashedPassword
+                        ? await compare(password, user.hashedPassword)
+                        : false;
 
-                    const valid = await compare(password, user.hashedPassword);
-                    if (!valid) return null;
+                    if (!valid) {
+                        if (!isDev) {
+                            const newCount = await redis.incr(failKey);
+                            if (newCount === 1) {
+                                await redis.expire(failKey, FAIL_WINDOW_SEC);
+                            }
+                        }
+                        return null;
+                    }
+
+                    if (!isDev) {
+                        await redis.del(failKey).catch(() => {});
+                    }
 
                     return {
-                        id: user.id,
-                        email: user.email,
-                        name: user.name ?? null,
-                        image: user.image ?? null,
+                        id: user!.id,
+                        email: user!.email,
+                        name: user!.name ?? null,
+                        image: user!.image ?? null,
                     };
                 } catch (error) {
                     console.error('[auth][authorize]', error);
