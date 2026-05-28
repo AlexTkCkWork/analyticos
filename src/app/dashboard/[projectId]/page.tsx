@@ -3,7 +3,6 @@ import { auth } from '@/lib/auth';
 import { getProjectByIdForUser } from '@/lib/db/queries';
 import { parseAnalyticsRange, RangePeriod } from '@/lib/analytics-range';
 import {
-    fillTimeSeries,
     getBrowserBreakdown,
     getCountryBreakdown,
     getDeviceBreakdown,
@@ -13,6 +12,7 @@ import {
     getTopPages,
     getTopReferrers,
 } from '@/lib/db/analytics';
+import { fillTimeSeries } from '@/lib/time-series';
 import TimeSeriesChart from '@/components/charts/time-series-chart';
 import BarList from '@/components/charts/bar-list';
 import DateRangePicker from '@/components/dashboard/date-range-picker';
