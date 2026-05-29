@@ -8,7 +8,10 @@ import { RegisterSchema } from '@/lib/validations';
 import { actionRateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-import { signOut } from '@/lib/auth';
+import { signOut, signIn } from '@/lib/auth';
+
+const DEMO_EMAIL = 'demo@analyticos.app';
+const DEMO_PASSWORD = 'demo-pass-2026';
 
 export type ActionResult<T = void> =
     | { success: true; data?: T }
@@ -90,4 +93,12 @@ export const registerUser = async (
 
 export const signOutAction = async () => {
     await signOut({ redirectTo: '/login' });
+};
+
+export const viewDemoAction = async () => {
+    await signIn('credentials', {
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+        redirectTo: '/dashboard',
+    });
 };

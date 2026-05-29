@@ -1,0 +1,31 @@
+name: Seed demo data
+
+# Manual trigger only — never runs automatically.
+# Use the "Run workflow" button in the GitHub Actions UI to re-seed the demo
+# project. Safe to run repeatedly; the seed script wipes the demo project's
+# pageviews and reseeds each time.
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    name: Seed demo project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Seed
+        run: npm run db:seed:ci
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

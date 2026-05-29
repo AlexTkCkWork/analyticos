@@ -8,6 +8,8 @@ A privacy-first, cookieless web analytics platform — a self-hostable, open-sou
 > **Author:** Oleksii Tkachenko ([@AlexTkCkWork](https://github.com/AlexTkCkWork))
 > **License:** AGPL-3.0-or-later
 
+![AnalyticOS dashboard showing pageviews, unique visitors, time-series chart, top pages, top referrers, and breakdowns by browser, OS, device, and country](docs/demo_analytics.png)
+
 ---
 
 ## Table of contents
@@ -46,6 +48,8 @@ The project is also a deliberate exercise in production-grade engineering: edge 
 - **Server-side bot filtering** — known crawlers, AI bots, and CLI clients are detected and dropped before the DB write
 - **Auth** — email/password (bcrypt) and GitHub OAuth, with database-backed sessions (server-side invalidation possible)
 - **Privacy by design** — no cookies, no localStorage, no persistent visitor ID. Daily-rotating SHA-256 hash means cross-day tracking is mathematically impossible
+
+![Per-project settings page showing the embeddable tracking snippet with public key and the type-the-domain-to-confirm delete form](docs/demo_settings.png)
 
 ---
 
