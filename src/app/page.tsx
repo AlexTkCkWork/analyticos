@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { auth } from '@/lib/auth';
 import { LinkButton } from '@/components/ui/link-button';
+import ViewDemoButton from '@/components/auth/view-demo-button';
 
 export const metadata: Metadata = {
     title: 'AnalyticOS — Privacy-first web analytics',
@@ -97,10 +98,17 @@ const Home = async () => {
                             </LinkButton>
                         ) : (
                             <>
-                                <LinkButton href={'/register'}>
+                                <ViewDemoButton />
+                                <LinkButton
+                                    href={'/register'}
+                                    variant={'outline'}
+                                >
                                     Get started free
                                 </LinkButton>
-                                <LinkButton href={'/login'} variant={'outline'}>
+                                <LinkButton
+                                    href={'/login'}
+                                    variant={'ghost'}
+                                >
                                     Sign in
                                 </LinkButton>
                             </>
