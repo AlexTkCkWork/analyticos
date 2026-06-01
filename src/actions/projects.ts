@@ -47,15 +47,15 @@ export const createProject = async (
 
         const { name, domain } = parsed.data;
 
-        const existing = await db.query.projects.findFirst({
-            where: and(
-                eq(projects.userId, userId),
-                eq(projects.domain, domain)
-            ),
-            columns: { id: true },
-        });
+        const created = await db
+            .insert(projects)
+            .values({ userId, name, domain })
+            .onConflictDoNothing({
+                target: [projects.userId, projects.domain],
+            })
+            .returning({ id: projects.id });
 
-        if (existing) {
+        if (created.length === 0) {
             return {
                 success: false,
                 errors: {
@@ -64,14 +64,9 @@ export const createProject = async (
             };
         }
 
-        const [created] = await db
-            .insert(projects)
-            .values({ userId, name, domain })
-            .returning({ id: projects.id });
-
         revalidatePath('/dashboard');
 
-        return { success: true, data: { projectId: created.id } };
+        return { success: true, data: { projectId: created[0].id } };
     } catch (error) {
         console.error('[projects][createProject]', error);
         return {

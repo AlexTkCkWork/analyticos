@@ -10,6 +10,16 @@
         var key = el.getAttribute('data-key');
         if (!key) return;
 
+        var host = location.hostname;
+        if (
+            !host ||
+            host === 'localhost' ||
+            host === '127.0.0.1' ||
+            host === '0.0.0.0' ||
+            host === '::1' ||
+            location.protocol === 'file:'
+        ) return;
+
         var endpoint = new URL(el.src).origin + '/api/collect';
 
         var payload = JSON.stringify({
