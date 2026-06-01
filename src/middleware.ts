@@ -4,18 +4,27 @@ import { globalRateLimit } from '@/lib/rate-limit';
 import { routesConfigs, publicFallback } from '@/lib/routes-config';
 import { auth } from '@/lib/auth';
 
-function tooManyRequests(reset: number) {
+function tooManyRequests(reset: number, request: NextRequest) {
+    const retryAfter = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
+    const baseHeaders = {
+        'Retry-After': retryAfter.toString(),
+        'X-RateLimit-Reset': new Date(reset).toISOString(),
+    };
+
+    const wantsHtml = (request.headers.get('accept') ?? '').includes(
+        'text/html'
+    );
+
+    if (wantsHtml) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/too-many-requests';
+        url.searchParams.set('retry', retryAfter.toString());
+        return NextResponse.rewrite(url, { status: 429, headers: baseHeaders });
+    }
+
     return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        {
-            status: 429,
-            headers: {
-                'Retry-After': Math.ceil(
-                    (reset - Date.now()) / 1000
-                ).toString(),
-                'X-RateLimit-Reset': new Date(reset).toISOString(),
-            },
-        }
+        { error: 'Too many requests. Please try again later.', retryAfter },
+        { status: 429, headers: baseHeaders }
     );
 }
 
@@ -35,7 +44,7 @@ export async function middleware(request: NextRequest) {
 
     if (!isDev) {
         const global = await globalRateLimit.limit(ip);
-        if (!global.success) return tooManyRequests(global.reset);
+        if (!global.success) return tooManyRequests(global.reset, request);
     }
 
     const config =
@@ -54,7 +63,7 @@ export async function middleware(request: NextRequest) {
             config.rateLimitBy === 'userId' && userId ? userId : ip;
 
         const limited = await config.rateLimiter.limit(identifier);
-        if (!limited.success) return tooManyRequests(limited.reset);
+        if (!limited.success) return tooManyRequests(limited.reset, request);
     }
 
     const response = NextResponse.next();

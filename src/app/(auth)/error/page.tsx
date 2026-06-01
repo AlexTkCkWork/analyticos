@@ -20,8 +20,15 @@ const ERROR_MESSAGES: Record<string, string> = {
     Configuration: 'Server configuration error. Please contact support.',
     AccessDenied: 'Access was denied. Please try again.',
     Verification: 'The verification link has expired or already been used.',
+    CredentialsSignin: 'Invalid email or password.',
+    OAuthSignin: 'There was a problem starting sign-in with your provider.',
+    OAuthCallback: 'There was a problem completing sign-in with your provider.',
+    OAuthCallbackError:
+        'There was a problem completing sign-in with your provider.',
     OAuthAccountNotLinked:
         'This email is linked to a different sign-in method.',
+    SessionRequired: 'You need to sign in to access that page.',
+    Callback: 'An error occurred during sign-in. Please try again.',
     Default: 'An unexpected authentication error occurred.',
 };
 
