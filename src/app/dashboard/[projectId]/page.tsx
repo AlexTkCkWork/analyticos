@@ -14,14 +14,26 @@ import {
 } from '@/lib/db/analytics';
 import { fillTimeSeries } from '@/lib/time-series';
 import TimeSeriesChart from '@/components/charts/time-series-chart';
-import BarList from '@/components/charts/bar-list';
 import DateRangePicker from '@/components/dashboard/date-range-picker';
 import { withCache } from '@/lib/cache';
 import Link from 'next/link';
+import BarList, { BarItems } from '@/components/charts/bar-list';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+    DIRECT_REFERRER,
+    type FilterKey,
+    filtersCacheKey,
+    parseAnalyticsFilters,
+} from '@/lib/analytics-filters';
+import ActiveFilters from '@/components/dashboard/active-filters';
 
 type PageProps = {
     params: Promise<{ projectId: string }>;
-    searchParams: Promise<{ period?: RangePeriod; from?: string; to?: string }>;
+    searchParams: Promise<
+        { period?: RangePeriod; from?: string; to?: string } & Partial<
+            Record<FilterKey, string>
+        >
+    >;
 };
 
 const CACHE_TTL = 60;
@@ -34,12 +46,22 @@ const Page = async ({ params, searchParams }: PageProps) => {
     const project = await getProjectByIdForUser(projectId, session.user.id);
     if (!project) notFound();
 
-    const range = parseAnalyticsRange(await searchParams);
+    const sp = await searchParams;
+    const range = parseAnalyticsRange(sp);
+    const filters = parseAnalyticsFilters(sp);
+
+    const searchParamsObj = new URLSearchParams(
+        Object.entries(sp).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string'
+        )
+    );
 
     const rangeKey =
         range.period === 'custom'
             ? `custom:${range.from.toISOString()}:${range.to.toISOString()}`
             : range.period;
+
+    const cacheKey = `stats:${projectId}:${rangeKey}:${filtersCacheKey(filters)}`;
 
     const [
         topLine,
@@ -50,22 +72,18 @@ const Page = async ({ params, searchParams }: PageProps) => {
         browsers,
         os,
         countries,
-    ] = await withCache(
-        `stats:${projectId}:${rangeKey}`,
-        CACHE_TTL,
-        async () => {
-            return await Promise.all([
-                getTopLineStats(projectId, range),
-                getPageviewsOverTime(projectId, range),
-                getTopPages(projectId, range),
-                getTopReferrers(projectId, range),
-                getDeviceBreakdown(projectId, range),
-                getBrowserBreakdown(projectId, range),
-                getOsBreakdown(projectId, range),
-                getCountryBreakdown(projectId, range),
-            ]);
-        }
-    );
+    ] = await withCache(cacheKey, CACHE_TTL, async () => {
+        return await Promise.all([
+            getTopLineStats(projectId, range, filters),
+            getPageviewsOverTime(projectId, range, filters),
+            getTopPages(projectId, range, filters),
+            getTopReferrers(projectId, range, filters),
+            getDeviceBreakdown(projectId, range, filters),
+            getBrowserBreakdown(projectId, range, filters),
+            getOsBreakdown(projectId, range, filters),
+            getCountryBreakdown(projectId, range, filters),
+        ]);
+    });
 
     const series = fillTimeSeries(overTime, range);
 
@@ -93,6 +111,8 @@ const Page = async ({ params, searchParams }: PageProps) => {
                 <DateRangePicker activePeriod={range.period} />
             </div>
 
+            <ActiveFilters filters={filters} searchParams={searchParamsObj} />
+
             <div className={'grid grid-cols-2 gap-4 sm:max-w-md'}>
                 <div className={'rounded-lg border p-4'}>
                     <p className={'text-sm text-muted-foreground'}>Pageviews</p>
@@ -104,6 +124,7 @@ const Page = async ({ params, searchParams }: PageProps) => {
                     <p className={'text-sm text-muted-foreground'}>
                         Unique visitors
                     </p>
+                    .
                     <p className={'text-2xl font-semibold tabular-nums'}>
                         {topLine.visitors}
                     </p>
@@ -124,18 +145,79 @@ const Page = async ({ params, searchParams }: PageProps) => {
                         name: p.url,
                         views: p.views,
                     }))}
+                    filter={{
+                        key: 'url',
+                        currentValue: filters.url,
+                        searchParams: searchParamsObj,
+                    }}
                 />
                 <BarList
                     title={'Top referrers'}
                     items={topReferrers.map((r) => ({
                         name: r.referrer ?? 'Direct',
+                        filterValue: r.referrer ?? DIRECT_REFERRER,
                         views: r.views,
                     }))}
+                    filter={{
+                        key: 'referrer',
+                        currentValue: filters.referrer,
+                        searchParams: searchParamsObj,
+                    }}
                 />
-                <BarList title={'Browsers'} items={browsers} />
-                <BarList title={'Operating systems'} items={os} />
-                <BarList title={'Devices'} items={devices} />
-                <BarList title={'Countries'} items={countries} />
+
+                <div className={'rounded-lg border p-4'}>
+                    <Tabs defaultValue={'browsers'}>
+                        <TabsList>
+                            <TabsTrigger value={'browsers'}>
+                                Browsers
+                            </TabsTrigger>
+                            <TabsTrigger value={'os'}>
+                                Operating systems
+                            </TabsTrigger>
+                            <TabsTrigger value={'devices'}>Devices</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value={'browsers'}>
+                            <BarItems
+                                items={browsers}
+                                filter={{
+                                    key: 'browser',
+                                    currentValue: filters.browser,
+                                    searchParams: searchParamsObj,
+                                }}
+                            />
+                        </TabsContent>
+                        <TabsContent value={'os'}>
+                            <BarItems
+                                items={os}
+                                filter={{
+                                    key: 'os',
+                                    currentValue: filters.os,
+                                    searchParams: searchParamsObj,
+                                }}
+                            />
+                        </TabsContent>
+                        <TabsContent value={'devices'}>
+                            <BarItems
+                                items={devices}
+                                filter={{
+                                    key: 'device',
+                                    currentValue: filters.device,
+                                    searchParams: searchParamsObj,
+                                }}
+                            />
+                        </TabsContent>
+                    </Tabs>
+                </div>
+
+                <BarList
+                    title={'Countries'}
+                    items={countries}
+                    filter={{
+                        key: 'country',
+                        currentValue: filters.country,
+                        searchParams: searchParamsObj,
+                    }}
+                />
             </div>
         </div>
     );
