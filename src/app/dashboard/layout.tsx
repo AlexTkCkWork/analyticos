@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import SignOutButton from '@/components/auth/sign-out-button';
 import { listProjectsForUser } from '@/lib/db/queries';
 import Sidebar from '@/components/dashboard/sidebar';
+import ThemeToggle from '@/components/theme/theme-toggle';
 
 const Layout = async ({ children }: { children: ReactNode }) => {
     const session = await auth();
@@ -41,6 +42,7 @@ const Layout = async ({ children }: { children: ReactNode }) => {
                         <span className={'text-sm text-muted-foreground'}>
                             {session.user.email}
                         </span>
+                        <ThemeToggle />
                         <SignOutButton />
                     </div>
                 </div>

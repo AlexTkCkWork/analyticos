@@ -28,7 +28,9 @@ const CopySnippet = ({ snippet }: { snippet: string }) => {
                 variant={'outline'}
                 size={'sm'}
                 onClick={handleCopy}
-                className={'absolute right-2 top-2'}
+                className={
+                    'absolute right-2 top-2 bg-background/80 backdrop-blur-sm shadow-sm'
+                }
             >
                 {copied ? 'Copied!' : 'Copy'}
             </Button>

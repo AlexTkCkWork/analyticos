@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { auth } from '@/lib/auth';
 import { LinkButton } from '@/components/ui/link-button';
 import ViewDemoButton from '@/components/auth/view-demo-button';
+import ThemeToggle from '@/components/theme/theme-toggle';
 
 export const metadata: Metadata = {
     title: 'AnalyticOS — Privacy-first web analytics',
@@ -56,11 +57,15 @@ const Home = async () => {
                     </div>
 
                     {isAuthed ? (
-                        <LinkButton href={'/dashboard'} size={'sm'}>
-                            Dashboard
-                        </LinkButton>
+                        <div className={'flex items-center gap-2'}>
+                            <ThemeToggle />
+                            <LinkButton href={'/dashboard'} size={'sm'}>
+                                Dashboard
+                            </LinkButton>
+                        </div>
                     ) : (
                         <div className={'flex items-center gap-2'}>
+                            <ThemeToggle />
                             <LinkButton
                                 href={'/login'}
                                 variant={'ghost'}
@@ -90,7 +95,9 @@ const Home = async () => {
                         cookies, consent banners, or bloated scripts.
                     </p>
                     <div
-                        className={'mt-8 flex items-center justify-center gap-3'}
+                        className={
+                            'mt-8 flex items-center justify-center gap-3'
+                        }
                     >
                         {isAuthed ? (
                             <LinkButton href={'/dashboard'}>
@@ -105,10 +112,7 @@ const Home = async () => {
                                 >
                                     Get started free
                                 </LinkButton>
-                                <LinkButton
-                                    href={'/login'}
-                                    variant={'ghost'}
-                                >
+                                <LinkButton href={'/login'} variant={'ghost'}>
                                     Sign in
                                 </LinkButton>
                             </>
